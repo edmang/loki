@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loki</title>
+</head>
+<body>
+
+
+<div class="d-flex align-items-center flex-column justify-content-center h-100" id="header">
+    <h1 class="display-4">Only for trustful people ... <u>{{localUserName}}</u> !</h1>
+    <form>
+        <div class="form-group">
+            <input class="form-control form-control-lg" placeholder="User Name" type="text" ng-model="username">
+        </div>
+        <div class="form-group">
+            <button class="btn btn-info btn-lg btn-block" ng-click="findUser(username)">Find</button>
+        </div>
+        <div class="form-group">
+            <button class="btn btn-warning btn-lg btn-block" ng-click="createUser(username)">Create</button>
+        </div>
+    </form>
+</div>
+
+<div class="container">
+
+    <br>
+
+    <div class="ng-hide" ng-show="credentials.length > 0 || currentUserExists">
+        <form class="flex-column">
+            <div class="form-row">
+                <div class="col-5">
+                    <input type="text" class="form-control" placeholder="Description" ng-model="description">
+                </div>
+                <div class="col-4">
+                    <input type="text" class="form-control" placeholder="Login" ng-model="login">
+                </div>
+                <div class="col-2">
+                    <input type="text" class="form-control" placeholder="Password" ng-model="password">
+                </div>
+                <button type="button" class="btn btn-warning" ng-click="addCredential(username)">Add New</button>
+            </div>
+        </form>
+
+
+        <br>
+
+        <table class="table table-striped table-editable table-dark">
+            <thead>
+            <tr>
+                <th scope="col">Description</th>
+                <th scope="col"></th>
+                <th scope="col">Login</th>
+                <th scope="col"></th>
+                <th scope="col">Password</th>
+                <th scope="col"></th>
+                <th scope="col">Action</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr ng-repeat="cred in credentials">
+                <td>
+                    <div>{{cred.description}}</div>
+                </td>
+                <td>
+                    <input class="ng-hide" ng-show="descriptionHidden" type="text" ng-model="newDescription">
+                    <i class="far fa-edit fa-clickable" ng-click="descriptionHidden = !descriptionHidden"></i></a>
+                </td>
+                <td>
+                    <div>{{cred.login}}</div>
+                </td>
+                <td>
+                    <input class="ng-hide" ng-show="loginHidden" type="text" ng-model="newLogin">
+                    <i class="far fa-edit fa-clickable" ng-click="loginHidden = !loginHidden"></i></a>
+                </td>
+                <td>
+                    <div>{{cred.password}}</div>
+                </td>
+                <td>
+                    <input class="ng-hide" ng-show="passwordHidden" type="text" ng-model="newPassword">
+                    <i class="far fa-edit fa-clickable" ng-click="passwordHidden = !passwordHidden"></i></a>
+                </td>
+                <td>
+                    <i class="far fa-save fa-clickable" ng-click="updateCredential(cred, newDescription, newLogin, newPassword)"></i></a>
+                    &emsp;
+                    <i class="far fa-trash-alt fa-clickable" ng-click="deleteCredential(cred)"></i></a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
