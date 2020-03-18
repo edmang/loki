@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Loki</title>
+    <script>var slider = new Slider("#ex11", {
+	step: 20000,
+	min: 0,
+	max: 200000
+});</script>
 </head>
 <body>
 
@@ -11,13 +16,23 @@
     <h1 class="display-4">Only for trustful people ... <u>{{localUserName}}</u> !</h1>
     <form>
         <div class="form-group">
-            <input class="form-control form-control-lg" placeholder="User Name" type="text" ng-model="username">
+            <input class="form-control form-control-lg" placeholder="User" type="text" ng-model="username">
         </div>
         <div class="form-group">
-            <button class="btn btn-info btn-lg btn-block" ng-click="findUser(username)">Find</button>
+            <input class="form-control form-control-lg" placeholder="Password ?" type="password" ng-model="pass">
         </div>
-        <div class="form-group">
-            <button class="btn btn-warning btn-lg btn-block" ng-click="createUser(username)">Create</button>
+
+        <div class="ng-hide" ng-show="username !== ''">
+            <div class="form-group">
+                <button class="btn btn-outline-warning btn-lg btn-block" ng-click="loginToServer(username, pass)">
+                    Log in
+                </button>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-outline-warning btn-lg btn-block" ng-click="createUser(username, complexity)">Create</button>
+            </div>
+            <label for="customRange1">Unlock complexity : {{complexity}}</label>
+            <input type="range" class="custom-range" id="customRange1" min="0" max="1" step="0.1" ng-model="complexity">
         </div>
     </form>
 </div>
@@ -38,7 +53,9 @@
                 <div class="col-2">
                     <input type="text" class="form-control" placeholder="Password" ng-model="password">
                 </div>
-                <button type="button" class="btn btn-warning" ng-click="addCredential(username)">Add New</button>
+                <span style="font-size: 30px; color: Mediumslateblue;">
+                    <i type="button" class="far fa-plus-square fa-clickable" ng-click="addCredential(username)"></i>
+                </span>
             </div>
         </form>
 
@@ -66,26 +83,32 @@
                 </td>
                 <td>
                     <input class="ng-hide" ng-show="descriptionHidden" type="text" ng-model="newDescription">
-                    <i class="far fa-edit fa-clickable" ng-click="descriptionHidden = !descriptionHidden"></i></a>
+                    <i class="far fa-edit fa-clickable" ng-click="descriptionHidden = !descriptionHidden"></i>
                 </td>
                 <td>
                     <div>{{cred.login}}</div>
                 </td>
                 <td>
                     <input class="ng-hide" ng-show="loginHidden" type="text" ng-model="newLogin">
-                    <i class="far fa-edit fa-clickable" ng-click="loginHidden = !loginHidden"></i></a>
+                    <i class="far fa-edit fa-clickable" ng-click="loginHidden = !loginHidden"></i>
                 </td>
                 <td>
                     <div>{{cred.password}}</div>
                 </td>
                 <td>
                     <input class="ng-hide" ng-show="passwordHidden" type="text" ng-model="newPassword">
-                    <i class="far fa-edit fa-clickable" ng-click="passwordHidden = !passwordHidden"></i></a>
+                    <i class="far fa-edit fa-clickable" ng-click="passwordHidden = !passwordHidden"></i>
                 </td>
+
                 <td>
-                    <i class="far fa-save fa-clickable" ng-click="updateCredential(cred, newDescription, newLogin, newPassword)"></i></a>
+                    <span style="color: Dodgerblue;">
+                        <i class="far fa-save fa-clickable"
+                           ng-click="updateCredential(cred, newDescription, newLogin, newPassword)"></i>
+                    </span>
                     &emsp;
-                    <i class="far fa-trash-alt fa-clickable" ng-click="deleteCredential(cred)"></i></a>
+                    <span style="color: Tomato;">
+                        <i class="far fa-trash-alt fa-clickable" ng-click="deleteCredential(cred)"></i>
+                    </span>
                 </td>
             </tr>
             </tbody>

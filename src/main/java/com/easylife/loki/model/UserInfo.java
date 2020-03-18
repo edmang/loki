@@ -4,5 +4,6 @@ public enum UserInfo {
 
     SUCCESS,
     USER_NOT_EXIST,
-    USER_ALREADY_EXIST;
+    USER_ALREADY_EXIST,
+    WRONG_PASS;
 }

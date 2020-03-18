@@ -4,20 +4,24 @@ app.controller('userController', ['$scope', '$http', '$window', function($scope,
 
     $scope.credentials = [];
     $scope.currentUserExists = false;
-    $scope.username;
+    $scope.username = "";
+    $scope.pass = "";
     $scope.localUserName = "";
 
     $scope.initPage = function() {
         $scope.credentials = [];
         $scope.currentUserExists = false;
         $scope.localUserName = "";
+        $scope.description = "";
+        $scope.login = "";
+        $scope.password = "";
     }
 
     /*
      * User
      */
-    $scope.createUser = function(username) {
-        $http.post(baseUrl + 'createUser/' + username)
+    $scope.createUser = function(username, complexity) {
+        $http.post(baseUrl + 'createUser/' + username + "/" + complexity)
             .then(function successCallback(response) {
                 if (response.data.userInfo === "USER_ALREADY_EXIST") {
                     window.alert("User " + username + " already exists please create another one")
@@ -34,16 +38,38 @@ app.controller('userController', ['$scope', '$http', '$window', function($scope,
             });
     }
 
-    $scope.findUser = function(username) {
-        $http.get(baseUrl + 'getUser/' + username)
+    $scope.loginToServer = function(username, pass) {
+
+        let loginHolder = {
+            username: username,
+            pass: pass
+        };
+
+        let loginRequest = {
+            method: 'POST',
+            url: baseUrl + 'login',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            data: loginHolder
+        };
+
+        $http(loginRequest)
             .then(function successCallback(response) {
                 if (response.data.userInfo === "USER_NOT_EXIST") {
-                    window.alert("User " + username + " does not exist please create it first")
+                    window.alert("User " + username + " does not exist please create it first");
                     $scope.initPage();
+                } else if (response.data.userInfo === "WRONG_PASS") {
+                    window.alert("Wrong pass :)");
+                    $scope.initPage();
+                } else if (response.data.user.credentials.length === 0) {
+                    $scope.currentUserExists = true;
+                    $scope.localUserName = username;
+                    $scope.credentials = [];
                 } else {
                     $scope.currentUserExists = true;
-                    $scope.getCredential(response.data.user.username);
                     $scope.localUserName = username;
+                    $scope.getCredential(username, pass);
                 }
             }, function errorCallback(response) {
                 console.log("Error while getting user " + username);
@@ -55,8 +81,8 @@ app.controller('userController', ['$scope', '$http', '$window', function($scope,
     /*
      * Credential
      */
-    $scope.getCredential = function(username) {
-        $http.get(baseUrl + 'getCredential/' + username)
+    $scope.getCredential = function(username, pass) {
+        $http.get(baseUrl + 'getCredential/' + username + "/" + pass)
             .then(function successCallback(response) {
                 $scope.credentials = response.data;
                 console.log($scope.credentials);
@@ -86,7 +112,7 @@ app.controller('userController', ['$scope', '$http', '$window', function($scope,
         $http(addCredentialRequest)
             .then(function successCallback(response) {
                 console.log("new credential added successfully");
-                $scope.getCredential(username);
+                $scope.credentials = response.data;
             }, function errorCallback(response) {
                 console.log("Error while adding new credentials");
                 $scope.initPage();
@@ -107,7 +133,7 @@ app.controller('userController', ['$scope', '$http', '$window', function($scope,
         $http(deleteCredentialRequest)
             .then(function successCallback(response) {
                 console.log("Credential deleted successfully");
-                $scope.getCredential($scope.localUserName);
+                $scope.credentials = response.data;
             }, function errorCallback(response) {
                 console.log("Error while deleting credentials");
                 $scope.initPage();
@@ -146,11 +172,10 @@ app.controller('userController', ['$scope', '$http', '$window', function($scope,
             },
             data: credentialHolder
         };
-        console.log(description);
         $http(updateCredentialRequest)
             .then(function successCallback(response) {
                 console.log("Credential update successfully");
-                $scope.getCredential($scope.localUserName);
+                $scope.credentials = response.data;
             }, function errorCallback(response) {
                 console.log("Error while updating credentials");
                 $scope.initPage();

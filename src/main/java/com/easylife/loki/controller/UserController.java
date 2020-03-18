@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 @Controller
@@ -27,21 +26,29 @@ public class UserController {
     /**
      * Users
      */
-    @GetMapping(value = "/getUser/{username}")
-    public ResponseEntity<UserHolder> getUser(@PathVariable("username") String username) {
-        User user = userService.getUser(username);
+    @PostMapping(value = "/login", consumes = "application/json")
+    public ResponseEntity<UserHolder> login(@RequestBody LoginHolder loginHolder) {
+        User user = userService.getUser(loginHolder.getUsername());
         if (user == null) {
             return new ResponseEntity<>(new UserHolder(null, UserInfo.USER_NOT_EXIST), HttpStatus.OK);
+
+        } else if (user.getCredentials().size() == 0) {
+            return new ResponseEntity<>(new UserHolder(user, UserInfo.SUCCESS), HttpStatus.OK);
+
+        } else if (userService.matchPassword(loginHolder.getUsername(), loginHolder.pass)) {
+            return new ResponseEntity<>(new UserHolder(user, UserInfo.SUCCESS), HttpStatus.OK);
+
+        } else {
+            return new ResponseEntity<>(new UserHolder(null, UserInfo.WRONG_PASS), HttpStatus.OK);
         }
-        return new ResponseEntity<>(new UserHolder(user, UserInfo.SUCCESS), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/createUser/{username}")
-    public ResponseEntity<UserHolder> createUser(@PathVariable("username") String username) {
+    @PostMapping(value = "/createUser/{username}/{complexity}")
+    public ResponseEntity<UserHolder> createUser(@PathVariable("username") String username, @PathVariable("complexity") Double complexity) {
         if (userService.getUser(username) != null) {
             return new ResponseEntity<>(new UserHolder(null, UserInfo.USER_ALREADY_EXIST), HttpStatus.OK);
         } else {
-            userService.createUser(username);
+            userService.createUser(username, complexity);
             return new ResponseEntity<>(new UserHolder(new User(username), UserInfo.SUCCESS), HttpStatus.OK);
         }
     }
@@ -50,38 +57,44 @@ public class UserController {
     /**
      * Credentials
      */
-    @GetMapping(value = "/getCredential/{username}")
-    public ResponseEntity<Credential[]> getCredential(@PathVariable("username") String username) {
+    @GetMapping(value = "/getCredential/{username}/{pass}")
+    public ResponseEntity<Credential[]> getCredential(@PathVariable("username") String username, @PathVariable("pass") String pass) {
+
+        if (userService.matchPassword(username, pass)) {
+            return new ResponseEntity<>(this.getCredentials(username), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.OK);
+        }
+    }
+
+    @PostMapping(value = "/addCredential/{username}", consumes = "application/json")
+    public ResponseEntity<Credential[]> addCredential(@PathVariable("username") String username, @RequestBody Credential credential) {
+        userService.addCredential(username, credential);
+        return new ResponseEntity<>(this.getCredentials(username), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/deleteCredential/{username}", consumes = "application/json")
+    public ResponseEntity<Credential[]> deleteCredential(@PathVariable("username") String username, @RequestBody Credential credential) {
+        userService.deleteCredential(username, credential);
+        return new ResponseEntity<>(this.getCredentials(username), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/updateCredential/{username}", consumes = "application/json")
+    public ResponseEntity<Credential[]> updateCredential(@PathVariable("username") String username, @RequestBody CredentialHolder credentialHolder) {
+        userService.updateCredential(username, credentialHolder.getOldCredential(), credentialHolder.getNewCredential());
+        return new ResponseEntity<>(this.getCredentials(username), HttpStatus.OK);
+    }
+
+
+    private Credential[] getCredentials(String username) {
         User user = userService.getUser(username);
         List<Credential> credentialList = user.getCredentials();
         Credential[] credentials = new Credential[credentialList.size()];
         credentialList.toArray(credentials);
-        return new ResponseEntity<>(credentials, HttpStatus.OK);
+        return credentials;
     }
 
-    @PostMapping(value = "/addCredential/{username}", consumes = "application/json")
-    public ResponseEntity addCredential(@PathVariable("username") String username, @RequestBody Credential credential) {
-        userService.addCredential(username, credential);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PostMapping(value = "/deleteCredential/{username}", consumes = "application/json")
-    public ResponseEntity<String> deleteCredential(@PathVariable("username") String username, @RequestBody Credential credential) {
-        userService.deleteCredential(username, credential);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PostMapping(value = "/updateCredential/{username}", consumes = "application/json")
-    public ResponseEntity updateCredential(@PathVariable("username") String username, @RequestBody CredentialHolder credentialHolder) {
-        try {
-            userService.updateCredential(username, credentialHolder.getOldCredential(), credentialHolder.getNewCredential());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
-        }
-    }
-
-
+    //
     private static class CredentialHolder {
         private Credential oldCredential;
         private Credential newCredential;
@@ -97,6 +110,25 @@ public class UserController {
 
         public Credential getNewCredential() {
             return newCredential;
+        }
+    }
+
+
+    private static class LoginHolder {
+        private String username;
+        private String pass;
+
+        public LoginHolder(String username, String pass) {
+            this.username = username;
+            this.pass = pass;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getPass() {
+            return pass;
         }
     }
 }

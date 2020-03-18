@@ -15,6 +15,7 @@ public class User {
 
     private long id = ID_GENERATOR.incrementAndGet();
     private String username;
+    private Double passwordComplexity = 1.0;
     private List<Credential> credentials = new ArrayList<>();
 
     public User() {
@@ -22,6 +23,11 @@ public class User {
 
     public User(String username) {
         this.username = username;
+    }
+
+    public User(String username, Double passwordComplexity) {
+        this.username = username;
+        this.passwordComplexity = passwordComplexity;
     }
 
     public List<Credential> getCredentials() {
@@ -36,6 +42,10 @@ public class User {
         return username;
     }
 
+    public Double getPasswordComplexity() {
+        return passwordComplexity;
+    }
+
     public void setId(long id) {
         this.id = id;
     }
@@ -48,19 +58,22 @@ public class User {
         this.username = username;
     }
 
+    public void setPasswordComplexity(Double passwordComplexity) {
+        this.passwordComplexity = passwordComplexity;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
         return id == user.id &&
-                Objects.equals(username, user.username) &&
-                Objects.equals(credentials, user.credentials);
+                Objects.equals(username, user.username);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, credentials);
+        return Objects.hash(id, username, passwordComplexity, credentials);
     }
 
     @Override
@@ -68,6 +81,7 @@ public class User {
         return "User{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
+                ", passwordComplexity=" + passwordComplexity +
                 ", credentials=" + credentials +
                 '}';
     }
